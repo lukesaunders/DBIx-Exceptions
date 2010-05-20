@@ -252,10 +252,10 @@ sub run_tests {
    foreach my $test_name (keys %{$self->test_data}) {
       my $data = $self->test_data->{$test_name};
       if (my $sub = $self->can($test_name)) {
- #        $sub->($self);
+         $sub->($self);
       } else {
          if ($data->{stmt}) {
-#            $self->test_generic_live($test_name);
+            $self->test_generic_live($test_name);
          } else {
             $self->test_generic_mock($test_name);
          }
