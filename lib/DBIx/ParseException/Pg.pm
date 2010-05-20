@@ -4,6 +4,7 @@ use Moose;
 use DBIx::Exceptions;
 
 sub error_handler {
+   use Data::Dumper; warn Dumper(\@_);
    my $string = shift;
 
    my %error_codes = (
@@ -536,6 +537,8 @@ sub error_handler {
       },
       '57014' => {
          id => 'query_canceled',
+         group => 'timeout',
+         class => 'QueryCanceled'
       },
       '57P01' => {
          id => 'admin_shutdown',
