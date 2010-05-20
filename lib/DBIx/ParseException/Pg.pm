@@ -4,7 +4,6 @@ use Moose;
 use DBIx::Exceptions;
 
 sub error_handler {
-   use Data::Dumper; warn Dumper(\@_);
    my $string = shift;
 
    my %error_codes = (
@@ -367,6 +366,8 @@ sub error_handler {
       },
       '40P01' => {
          id => 'deadlock_detected',
+         class => 'Deadlock',
+         group => 'deadlock'
       },
 
       # syntax errors
