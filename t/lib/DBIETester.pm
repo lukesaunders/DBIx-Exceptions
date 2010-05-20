@@ -71,7 +71,7 @@ sub _build_dbh {
 sub create_table {
    my $self = shift;
 
-   $self->dbh->do($self->test_data->{create_table});
+   $self->dbh->do(delete $self->test_data->{create_table});
 }
 
 sub non_unique {
@@ -126,7 +126,7 @@ sub invalid_column {
 sub syntax {
    my $self = shift;
    my $data = $self->test_data->{syntax};
-
+   
    subtest 'syntax' => sub {
       my $test = 0;
       plan tests => 15;
@@ -185,14 +185,40 @@ sub syntax {
    };
 }
 
+# generic test which just uses the stmt in the test data, runs it and checks that
+# the class and the tokens are set correctly
+sub test_generic {
+   my ($self, $test_name) = @_;
+   my $data = $self->test_data->{ $test_name };
+   subtest $test_name => sub {
+      plan;
+      try {
+         my $sth = $self->dbh->prepare($data->{stmt});
+         $sth->execute(@{$data->{vals}});
+      } catch {
+         isa_ok $_, $data->{class};
+         like $_->original, qr/${\$data->{err}}/, '... and original message got set correctly';
+         if (my $tkns = $data->{tokens}) {
+            foreach my $col (keys %{$tkns}) {
+               is $_->{$col}, $tkns->{$col}, "... and $col token got set correctly";
+            }
+         }
+         done_testing();
+      };
+   };
+}
+
 sub run_tests {
    my $self = shift;
 
    $self->create_table;
-   $self->non_unique;
-   $self->invalid_table;
-   $self->invalid_column;
-   $self->syntax;
+   foreach my $test_name (keys %{$self->test_data}) {
+      if (my $sub = $self->can($test_name)) {
+         $sub->($self);
+      } else {
+         $self->test_generic($test_name);
+      }
+   }
    done_testing;
 }
 

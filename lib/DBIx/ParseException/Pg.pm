@@ -221,6 +221,7 @@ sub error_handler {
       '23502' => {
          id => 'not_null_violation',
          group => 'constraint',
+         class => 'NotNull',
       },
       '23503' => {
          id => 'foreign_key_violation',
@@ -592,7 +593,7 @@ sub error_handler {
    if (my $class_ext = $error_info->{class}) {
       $class .= '::' . $class_ext;
    }
-   use Data::Dumper; print Dumper($error_info);
+#   use Data::Dumper; print Dumper($error_info);
 
    my $group = $error_info->{group};
 
@@ -602,6 +603,10 @@ sub error_handler {
       # fk constraints, unique constraints etc
       my ($constraint) = $string =~ /constraint "(.+)"/;
       push @args, ( constraint => $constraint );
+      my ($column_name) = $string =~ /column "(.+)"/;
+      if ($column_name) {
+         push @args, ( column => $column_name );
+      }
 
    } elsif ($group eq 'no_such') {
       # wrong table, wrong column etc
